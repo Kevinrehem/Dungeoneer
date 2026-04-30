@@ -4,6 +4,7 @@
 O Dungeoneer é uma aplicação unificada para gerenciamento de campanhas, NPCs e fichas de personagens de Dungeons & Dragons. Este projeto foi concebido utilizando os princípios da Clean Architecture, priorizando um design de software que seja flexível, coeso e fácil de manter a longo prazo.
 
 ## 🛠️ Tecnologias Utilizadas
+
 A stack tecnológica foi escolhida para garantir robustez no backend e uma interface moderna e tipada no frontend:
 - **Backend**: Java com Spring Boot.
 - **Frontend**: Next.js com TypeScript e componentes shadcn/ui.
@@ -21,14 +22,21 @@ Atualmente, o sistema foi desenhado como um Monolito. No entanto, devido à fort
 
 O núcleo do sistema (as Entidades do D&D) foi modelado para proteger as regras de negócio:
 
-1. **Composição sobre Herança**: Em vez de criar uma hierarquia rígida de classes para representar capacidades dos personagens (Feats), utilizamos o Padrão Strategy através de uma interface genérica Feat. Isso permite atribuir habilidades de raças, classes e antecedentes dinamicamente, mantendo o sistema extensível e alinhado aos princípios de design de software.
+1. **Composição sobre Herança**: Em vez de criar uma hierarquia rígida de classes para representar capacidades dos personagens (Feats), utilizamos o Padrão Strategy através de uma interface genérica Feat. Isso permite atribuir habilidades de raças, classes e antecedentes dinamicamente, mantendo o sistema extensível e evitando uma explosão combinatória de subclasses.
 
-2. **Padrão Builder**: A entidade Spell (Magia) 
-possui dezenas de atributos opcionais (como tipos de dano, condições, componentes verbais/somáticos). O padrão Builder foi adotado para simplificar a instanciação desses objetos complexos sem poluir a classe com construtores gigantes.
+2. **Padrão Builder para Objetos Complexos**: A entidade Spell (Magia) possui dezenas de atributos opcionais (como múltiplos tipos de dano com dados diferentes, efeitos ao longo do tempo e componentes). O Padrão Builder foi adotado para simplificar e padronizar a instanciação desses objetos, permitindo associar múltiplos dados (instâncias da classe Dice) a tipos de dano na mesma magia sem poluir a classe com construtores gigantes.
 
-3. **Segregação de Interfaces (ISP)**: A lógica de uso de magias foi extraída para uma interface SpellcastingStrategy (FullCaster, HalfCaster, NonCaster). Isso garante que personagens puramente marciais não herdem código inútil de pontos de magia, mantendo as classes coesas.
+3. **Princípio de Segregação de Interfaces (ISP)**: A mecânica de uso de magias foi extraída para a abstração SpellcastingStrategy (com implementações independentes como FullCaster, HalfCaster, PactMagic e NonCaster). Isso garante que personagens puramente marciais não dependam ou herdem código inútil de atributos mágicos, mantendo as classes enxutas e coesas.
 
-4. **Inversão de Dependências (DIP)**: Para lidar com magias de área e alvo único de forma limpa, extraímos o conceito de alvo para uma interface Target (AreaTarget, SingleTarget), permitindo que a magia afete o jogo sem precisar saber como o alvo é calculado.
+4. **Princípio de Inversão de Dependências (DIP)**: Para lidar com magias de área e alvo único de forma limpa, extraímos o conceito de alvo para uma interface Target (AreaTarget, SingleTarget). A magia afeta a abstração do alvo, sem precisar conhecer detalhes de cálculos de área ou a implementação da grade do mapa.
+
+5. **Princípio da Responsabilidade Única (SRP) e Objetos de Valor**: Em vez de tratar dados físicos do jogo como variáveis simples (String ou int), criamos a classe Dice. Como um Objeto de Valor (Value Object) na camada de domínio, ela isola todas as Regras Críticas de Negócio relacionadas a rolagens e acertos críticos, garantindo que o comportamento dos dados tenha um único motivo para mudar.
+
+6. **Princípio DRY (Don't Repeat Yourself) via Abstração**: O conjunto de atributos do jogo não é tratado como um mapa solto, mas encapsulado na interface AbilityScores. Como Personagens (PCs), NPCs e até itens mecânicos exigem cálculos de modificadores constantes, compor AbilityScores dentro desses atores centraliza o cálculo matemático, evitando que lógicas vitais do sistema sejam reescritas.
+
+7. **Extensão do Princípio Aberto/Fechado (OCP)**: Itens agora também possuem a capacidade de conceder Feats. Se uma arma ou equipamento mágico fornece proficiências, um ataque especial ou magias, ele apenas injeta o Feat no personagem. Assim, o sistema se mantém aberto para expansão (novos itens malucos criados pelos jogadores) e fechado para modificação (a classe PlayerCharacter não precisa ser alterada para acomodá-los).
+
+8. Padrão Strategy e Coesão nas Rolagens (DiceRoll): Para lidar com a complexidade de diferentes tipos de resolução mecânica sem sobrecarregar a entidade Spell, substituímos listas genéricas de dano por uma hierarquia baseada na interface DiceRoll. Foram criadas especializações altamente coesas como DamageRoll, HealRoll e CheckRoll. A classe CheckRoll unifica Ataques e Testes de Resistência de forma limpa, encapsulando toda a lógica de vantagem, desvantagem e aplicação de proficiência. Isso reforça o Princípio da Responsabilidade Única (SRP), garantindo que a magia não precise saber calcular o seu efeito, pois cada classe gerencia exclusivamente as regras de negócio do seu próprio tipo de rolagem
 
 ---
 ## 📊 Diagramas
@@ -96,7 +104,7 @@ classDiagram
         -String name
         -int level
         -int hitPoints
-        -Map~String, int~ abilityScores
+        -AbilityScores abilityScores
         -Set~ClassProgression~ progressions
         -List~Item~ inventory
         -Background background
@@ -104,6 +112,76 @@ classDiagram
         -List~Condition~ conditions
         -List~Feat~ activeFeats
     }
+
+    class AbilityScores {
+        <<interface>>
+        +getScore(String ability) int
+        +getModifier(String ability) int
+    }
+
+    class Dice {
+        -int faces
+        +roll(int quantity) int
+        +rollCritical(int quantity) int
+    }
+
+    %% Nova Hierarquia de Rolagens
+    class DiceRoll {
+        <<interface>>
+        +resolve(AbilityScores stats) int
+    }
+
+    class DamageRoll {
+        -DamageType damageType
+        -int numberOfDice
+        -Dice dice
+        -boolean addModifier
+        -String keyAttribute
+    }
+
+    class HealRoll {
+        -HealType type
+        -int numberOfDice
+        -Dice dice
+        -boolean addModifier
+        -String keyAttribute
+    }
+
+    class CheckRoll {
+        -boolean advantage
+        -boolean disadvantage
+        -boolean addProficiency
+        -String keyAttribute
+    }
+
+    class DamageType {
+        <<enumeration>>
+        FIRE
+        COLD
+        LIGHTNING
+        THUNDER
+        FORCE
+        PSYCHIC
+        RADIANT
+        NECROTIC
+        SLASHING
+        BLUDGEONING
+        PIERCING
+    }
+
+    class HealType {
+        <<enumeration>>
+        HP
+        THP
+    }
+
+    DiceRoll <|.. DamageRoll
+    DiceRoll <|.. HealRoll
+    DiceRoll <|.. CheckRoll
+    DamageRoll --> DamageType
+    HealRoll --> HealType
+    DamageRoll --> Dice
+    HealRoll --> Dice
 
     class ClassProgression {
         -Archetype archetype
@@ -116,6 +194,7 @@ classDiagram
         -HitDiceEnum hitDice
         -List~Feat~ classFeats
         -List~Subclass~ availableSubclasses
+        -List~Spell~ availableSpells
         -SpellcastingStrategy castingStrategy
     }
 
@@ -123,6 +202,7 @@ classDiagram
         -String name
         -String description
         -List~Feat~ subclassFeats
+        -List~Spell~ availableSpells
         -SpellcastingStrategy castingStrategy
     }
 
@@ -145,6 +225,7 @@ classDiagram
         <<interface>>
         +getName() String
         +getWeight() float
+        +getGrantedFeats() List~Feat~
         +use(PlayerCharacter pc) void
     }
 
@@ -153,8 +234,7 @@ classDiagram
         +getName() String
         +getLevel() int
         +getComponents() List~String~
-        +getDamageDice() String
-        +getDamageType() String
+        +getEffects() List~DiceRoll~
         +getConditionsCaused() List~Condition~
         +cast(PlayerCharacter caster, Target target) void
     }
@@ -164,28 +244,17 @@ classDiagram
         +applyEffect(Spell spell) void
     }
 
-    class SingleTarget {
-        -PlayerCharacter target
-        +applyEffect(Spell spell) void
-    }
-
-    class AreaTarget {
-        -String shape
-        -int size
-        -List~PlayerCharacter~ affectedTargets
-        +applyEffect(Spell spell) void
-    }
+    class SingleTarget
+    class AreaTarget
 
     class SpellBuilder {
         -String name
         -int level
         -List~String~ components
-        -String damageDice
-        -String damageType
+        -List~DiceRoll~ effects
         -List~Condition~ conditionsCaused
         +setName(String name) SpellBuilder
-        +setDamage(String dice, String type) SpellBuilder
-        +addCondition(Condition cond) SpellBuilder
+        +addEffect(DiceRoll roll) SpellBuilder
         +build() Spell
     }
 
@@ -196,61 +265,58 @@ classDiagram
         +learnSpell(Spell spell) void
     }
 
-    class FullCaster {
-        -List~Spell~ spellsKnown
-        -Map~int, int~ spellSlots
-    }
-
-    class HalfCaster {
-        -List~Spell~ spellsKnown
-        -Map~int, int~ spellSlots
-    }
-
-    class NonCaster {
-    }
+    class FullCaster
+    class HalfCaster
+    class ThirdCaster
+    class PactMagic
+    class NonCaster
 
     class Lineage {
         -String name
-        -String description
-        -int baseSpeed
         -List~Feat~ grantedFeats
     }
 
     class Background {
         -String name
-        -String description
         -List~Feat~ backgroundFeats
     }
 
     class Condition {
-        -String name
-        -String description
         -boolean isActive
     }
 
-    %% Spellcasting Strategy Relationships
-    SpellcastingStrategy <|.. FullCaster : implements
-    SpellcastingStrategy <|.. HalfCaster : implements
-    SpellcastingStrategy <|.. NonCaster : implements
-    Archetype "1" o-- "1" SpellcastingStrategy : castingStrategy
-    Subclass "1" o-- "0..1" SpellcastingStrategy : castingStrategy
+    %% Relacionamentos do Strategy de Magia e Alvos
+    SpellcastingStrategy <|.. FullCaster
+    SpellcastingStrategy <|.. HalfCaster
+    SpellcastingStrategy <|.. ThirdCaster
+    SpellcastingStrategy <|.. PactMagic
+    SpellcastingStrategy <|.. NonCaster
+    
+    Archetype "1" o-- "1" SpellcastingStrategy : uses
+    Subclass "1" o-- "0..1" SpellcastingStrategy : uses
 
-    %% Spell, Builder, and Target Relationships
-    SpellBuilder ..> Spell : creates
-    Spell ..> Target : affects
-    Target <|.. SingleTarget : implements
-    Target <|.. AreaTarget : implements
     FullCaster "1" o-- "*" Spell : spellsKnown
     HalfCaster "1" o-- "*" Spell : spellsKnown
+    ThirdCaster "1" o-- "*" Spell : spellsKnown
+    PactMagic "1" o-- "*" Spell : spellsKnown
 
-    %% Relacionamentos Principais
+    Archetype "1" o-- "*" Spell : availableSpells
+    Subclass "1" o-- "*" Spell : availableSpells
+    
+    Target <|.. SingleTarget
+    Target <|.. AreaTarget
+    SpellBuilder ..> Spell : creates
+    Spell ..> Target : affects
+    Spell "1" *-- "*" DiceRoll : has
+
+    %% Relações Principais do Personagem
     PlayerCharacter "1" *-- "*" ClassProgression : progressions
+    PlayerCharacter "1" o-- "1" AbilityScores : stats
     ClassProgression "1" --> "1" Archetype : archetype
     ClassProgression "1" --> "0..1" Subclass : subclass
     Archetype "1" *-- "*" Subclass : availableSubclasses
     Archetype ..> HitDiceEnum : uses
 
-    %% Composições com o PlayerCharacter
     PlayerCharacter "1" o-- "*" Item : inventory
     PlayerCharacter "1" o-- "1" Background : background
     PlayerCharacter "1" o-- "1" Lineage : lineage
@@ -258,6 +324,7 @@ classDiagram
     PlayerCharacter "1" o-- "*" Feat : activeFeats
 
     %% Fornecimento de Feats
+    Item "1" o-- "*" Feat : grantedFeats
     Lineage "1" o-- "*" Feat : grantedFeats
     Background "1" o-- "*" Feat : backgroundFeats
     Archetype "1" o-- "*" Feat : classFeats
