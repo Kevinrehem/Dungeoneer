@@ -3,6 +3,8 @@
 
 O Dungeoneer é uma aplicação unificada para gerenciamento de campanhas, NPCs e fichas de personagens de Dungeons & Dragons. Este projeto foi concebido utilizando os princípios da Clean Architecture, priorizando um design de software que seja flexível, coeso e fácil de manter a longo prazo.
 
+#### [CASOS DE USO](./CASOS-DE-USO.md)
+
 ## 🛠️ Tecnologias Utilizadas
 
 A stack tecnológica foi escolhida para garantir robustez no backend e uma interface moderna e tipada no frontend:
