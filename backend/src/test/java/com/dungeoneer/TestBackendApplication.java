@@ -1,4 +1,4 @@
-package com.dungeoneer.demo;
+package com.dungeoneer;
 
 import org.springframework.boot.SpringApplication;
 

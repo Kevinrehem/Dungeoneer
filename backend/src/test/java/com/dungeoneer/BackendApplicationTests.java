@@ -1,4 +1,4 @@
-package com.dungeoneer.demo;
+package com.dungeoneer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
