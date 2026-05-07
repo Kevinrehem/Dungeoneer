@@ -1,5 +1,5 @@
 ## 🗂️ Estrutura de Diretórios (Clean Architecture)
-
+[← README.md](../README.md)  
 O backend do Dungeoneer foi estruturado para proteger as regras complexas do D&D, isolando o domínio de dependências externas (como o Spring Boot ou o PostgreSQL). A divisão de pacotes segue os princípios da Clean Architecture:
 
 ```text

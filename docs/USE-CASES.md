@@ -1,4 +1,5 @@
 # CASOS DE USO
+[← README.md](../README.md)
 
 Temos dois atores principais no Dungeoneer: o Jogador (focado na sua ficha) e o Mestre (focado na campanha e no mundo).
 
