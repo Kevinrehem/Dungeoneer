@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: dungeoneer
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-senha_super_secreta} # No futuro, trocaremos por Secrets do Swarm
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - dungeoneer-net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager # Garante que o banco rode no nó principal onde o volume físico está
+
+  backend:
+    # A imagem será baixada do GitHub Container Registry gerada pelo seu CI/CD
+    image: ghcr.io/kevinrehem/dungeoneer-backend:latest
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-senha_super_secreta}
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      - db
+    healthcheck:
+      # O Spring Boot Actuator dirá ao Swarm se a aplicação já terminou de ligar
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M # Segura a fome de RAM do Java
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first # <-- O SEGREDO DO ZERO DOWNTIME
+      restart_policy:
+        condition: on-failure
+
+  # DESABILITADO TEMPORARIAMENTE
+  # frontend:
+  #   image: ghcr.io/kevinrehem/dungeoneer-frontend:latest
+  #   environment:
+  #     NEXT_PUBLIC_API_URL: https://api.dungeoneer.com # URL pública do seu backend
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - dungeoneer-net
+  #   deploy:
+  #     replicas: 1
+  #     update_config:
+  #       order: start-first
+  #     restart_policy:
+  #       condition: any
+
+networks:
+  dungeoneer-net:
+    driver: overlay # Rede especial do Swarm para comunicação segura entre containers
+
+volumes:
+  db-data:

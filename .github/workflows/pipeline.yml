@@ -1,0 +1,36 @@
+name: Dungeoneer CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ] # Roda sempre que houver um push na main
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # ==========================================
+  # JOB 1: Testes e Build do Backend (Spring)
+  # ==========================================
+  test-backend:
+    name: Backend CI (Java 17)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar o Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven # Acelera os builds futuros guardando as dependências
+
+      - name: 🧪 Rodar Testes Unitários do Domínio
+        working-directory: ./backend
+        # O Maven vai compilar o código e rodar os testes. Se falhar, a pipeline para aqui.
+        run: mvn clean test
+
+      # NOTA: O Job de Frontend viria aqui embaixo no futuro!
+      # test-frontend:
+      #   name: Frontend CI (Next.js)
+      #   ...
