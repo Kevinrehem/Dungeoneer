@@ -1,0 +1,26 @@
+name: Backend CI (Spring Boot)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'  # 🪄 Só roda se houver mudança na pasta backend
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  test-backend:
+    name: Test & Build Java
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ☕ Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🧪 Rodar Testes
+        working-directory: ./backend
+        run: mvn clean test

@@ -1,0 +1,30 @@
+name: Frontend CI (Next.js)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'frontend/**'  # 🪄 Só roda se houver mudança na pasta frontend
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  test-frontend:
+    name: Lint & Build Next.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🟢 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Versão LTS recomendada para Next.js
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: 📦 Instalar Dependências
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🧹 Rodar Linter
+        working-directory: ./frontend
+        run: npm run lint

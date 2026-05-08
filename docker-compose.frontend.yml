@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    image: ghcr.io/kevinrehem/dungeoneer-frontend:latest
+    environment:
+      # Graças à rede 'dungeoneer-net', o front acha o back apenas chamando o nome do serviço 'api'
+      NEXT_PUBLIC_API_URL: http://api:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - dungeoneer-net
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+
+networks:
+  dungeoneer-net:
+    external: true

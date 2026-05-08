@@ -49,22 +49,6 @@ services:
       restart_policy:
         condition: on-failure
 
-  # DESABILITADO TEMPORARIAMENTE
-  # frontend:
-  #   image: ghcr.io/kevinrehem/dungeoneer-frontend:latest
-  #   environment:
-  #     NEXT_PUBLIC_API_URL: https://api.dungeoneer.com # URL pública do seu backend
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - dungeoneer-net
-  #   deploy:
-  #     replicas: 1
-  #     update_config:
-  #       order: start-first
-  #     restart_policy:
-  #       condition: any
-
 networks:
   dungeoneer-net:
     driver: overlay # Rede especial do Swarm para comunicação segura entre containers
