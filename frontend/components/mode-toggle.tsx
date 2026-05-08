@@ -12,6 +12,7 @@ export function ModeToggle() {
 
   // Evita erro de hidratação renderizando apenas no lado do cliente
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 
