@@ -1,20 +1,54 @@
 version: '3.8'
 
 services:
-  web:
-    image: ghcr.io/kevinrehem/dungeoneer-frontend:latest
+  db:
+    image: postgres:15-alpine
     environment:
-      # Graças à rede 'dungeoneer-net', o front acha o back apenas chamando o nome do serviço 'api'
-      NEXT_PUBLIC_API_URL: http://api:8080
+      POSTGRES_DB: dungeoneer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-senha_super_secreta}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Exposto para você conseguir conectar via DBeaver/DataGrip localmente
+    networks:
+      - dungeoneer-local-net
+
+  player-character-service:
+    # Em desenvolvimento, buildamos o código local do submódulo
+    build:
+      context: ./apps/player-character-service
+      dockerfile: Dockerfile # Certifique-se de que o Dockerfile existe na raiz do submódulo
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-senha_super_secreta}
+      SPRING_PROFILES_ACTIVE: dev # Perfil de dev costuma ser melhor localmente
+    ports:
+      - "8080:8080"
+    networks:
+      - dungeoneer-local-net
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./apps/dungeoneer-frontend
+      dockerfile: Dockerfile
+    environment:
+      # No desenvolvimento local rodando no browser, o Next.js precisa apontar para 'localhost' 
+      # se a chamada da API for feita do lado do cliente (Client-side Rendering)
+      NEXT_PUBLIC_API_URL: http://localhost:8080
     ports:
       - "3000:3000"
     networks:
-      - dungeoneer-net
-    deploy:
-      replicas: 1
-      update_config:
-        order: start-first
+      - dungeoneer-local-net
+    depends_on:
+      - player-character-service
 
 networks:
-  dungeoneer-net:
-    external: true
+  dungeoneer-local-net:
+    driver: bridge # Driver padrão para desenvolvimento local isolado
+
+volumes:
+  db-data:
