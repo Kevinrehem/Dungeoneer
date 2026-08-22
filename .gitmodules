@@ -7,3 +7,6 @@
 [submodule "auth-service"]
 	path = auth-service
 	url = git@github.com:Witches-Of-The-Country/auth-service.git
+[submodule "api-gateway"]
+	path = api-gateway
+	url = git@github.com:Witches-Of-The-Country/api-gateway.git
