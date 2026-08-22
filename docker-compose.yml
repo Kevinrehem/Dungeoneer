@@ -61,6 +61,23 @@ services:
     depends_on:
       - player-character-service
 
+  auth-service:
+    build:
+      context: ./auth-service/backend
+      dockerfile: ../Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8082:8080"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      db:
+        condition: service_healthy
+
   # campaign-service:
   #   build:
   #     context: ./campaign-service/backend
