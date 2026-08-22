@@ -17,7 +17,7 @@ When developing backend features in this project, you **MUST** follow these core
 ## 2. Test-Driven Development (TDD)
 
 - **Methodology**: Enforce **TDD (Test-Driven Development)** as a primary method. Write the failing test (Red), make it pass (Green), and then optimize (Refactor).
-- **Execution Plans**: Implementation plans executed using this skill **MUST have pauses for manual commits** between the Red, Green, and Refactor stages. (e.g., stop execution and ask the user to commit or instruct the agent to run the git commit before proceeding to the next stage).
+- **Execution Plans**: Implementation plans executed using this skill **MUST have pauses for manual commits** between the Red, Green, and Refactor stages. You must generate the exact `git commit -m "..."` command ready for the user to copy-paste. The commit messages must follow Conventional Commits (e.g. `test: add failing test for ...`, `feat: implement ... to pass test`, `refactor: clean up ...`).
 
 ## 3. Strict Testing Boundaries
 

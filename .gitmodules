@@ -4,3 +4,6 @@
 [submodule "player-character-service"]
 	path = player-character-service
 	url = git@github.com:Witches-Of-The-Country/player-character-service.git
+[submodule "auth-service"]
+	path = auth-service
+	url = git@github.com:Witches-Of-The-Country/auth-service.git

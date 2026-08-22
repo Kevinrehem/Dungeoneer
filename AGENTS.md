@@ -21,6 +21,7 @@ Dungeoneer is a D&D 5e/2024 companion web app for managing character sheets, cam
 | **Frontend Spec** | `docs/spec/res/frontend-spec.md` | Working on Next.js pages, UI design, components, data fetching |
 | **Infrastructure** | `docs/spec/res/infrastructure.md` | Working on Docker Compose, CI/CD, deployment, repo structure |
 | **Testing Strategy** | `docs/spec/res/testing-strategy.md` | Working on test suites, JaCoCo, TDD workflow |
+| **Project State** | `docs/STATE.md` | Tracking current progress, implemented features, and next steps |
 | **Use Cases** | `docs/USE-CASES.md` | Domain use cases with actor diagram |
 | **Architecture (Legacy)** | `docs/ARCHITECTURE.md` | Clean Architecture directory structure reference |
 | **README** | `README.md` | Domain model class diagrams and design decisions |
@@ -98,3 +99,8 @@ All REST APIs return **RFC 7807 ProblemDetail** responses via `@ControllerAdvice
 - **Production**: Vercel (frontend) + Railway (backend + PostgreSQL)
 - **Database**: PostgreSQL 15, shared instance, schema-per-service
 - **CI/CD**: GitHub Actions per service
+
+## Agent Workflow & Commits
+
+- **Ready-to-use Commit Commands**: Whenever a task or logical chunk of work is finished, the agent MUST provide the exact, ready-to-copy-and-paste `git commit` command (following the Conventional Commits style) for the user to execute.
+- **Phase Pauses**: When following multi-phase implementation plans (such as TDD cycles or moving between different microservices/components), the agent MUST pause and prompt the user to commit their current progress before proceeding to the next phase. Always provide the relevant commit command during these pauses.

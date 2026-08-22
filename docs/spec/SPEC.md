@@ -20,6 +20,7 @@ This specification follows a **progressive referencing** strategy. The hub (this
 | **Frontend Spec** | [res/frontend-spec.md](res/frontend-spec.md) | Working on Next.js pages, UI design, components, data fetching |
 | **Infrastructure** | [res/infrastructure.md](res/infrastructure.md) | Working on Docker Compose, CI/CD, deployment, repo structure |
 | **Testing Strategy** | [res/testing-strategy.md](res/testing-strategy.md) | Working on test suites, JaCoCo, TDD workflow |
+| **Project State** | [../STATE.md](../STATE.md) | Tracking current progress, implemented features, and next steps |
 
 ---
 

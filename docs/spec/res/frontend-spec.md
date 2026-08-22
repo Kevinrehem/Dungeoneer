@@ -22,6 +22,8 @@
 | Route | Description |
 |-------|-------------|
 | `/` | Landing page (existing) |
+| `/login` | User authentication (Dark Fantasy UI) |
+| `/register` | User registration (Zod + React Hook Form validation) |
 | `/characters` | Character list (grid/table view) |
 | `/characters/new` | Character creation wizard (multi-step) |
 | `/characters/[id]` | Character sheet dashboard (card-based) |
