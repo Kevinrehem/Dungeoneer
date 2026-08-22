@@ -1,0 +1,86 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: dungeoneer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dungeoneer-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dungeoneer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  player-character-service:
+    build:
+      context: ./player-character-service/backend
+      dockerfile: ../Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # api-gateway:
+  #   build:
+  #     context: ./api-gateway
+  #   environment:
+  #     PLAYER_CHARACTER_SERVICE_URL: http://player-character-service:8080
+  #     # CAMPAIGN_SERVICE_URL: http://campaign-service:8081
+  #     SPRING_PROFILES_ACTIVE: dev
+  #   ports:
+  #     - "9090:9090"
+  #   networks:
+  #     - dungeoneer-net
+  #   depends_on:
+  #     - player-character-service
+
+  dungeoneer-frontend:
+    build:
+      context: ./dungeoneer-frontend
+    environment:
+      # Until api-gateway is implemented, point directly to player-character-service
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      - player-character-service
+
+  # campaign-service:
+  #   build:
+  #     context: ./campaign-service/backend
+  #     dockerfile: ../Dockerfile
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dungeoneer
+  #     SPRING_DATASOURCE_USERNAME: postgres
+  #     SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+  #     SPRING_PROFILES_ACTIVE: dev
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - dungeoneer-net
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+
+networks:
+  dungeoneer-net:
+    driver: bridge
+
+volumes:
+  db-data:
