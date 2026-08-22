@@ -34,19 +34,20 @@ services:
       db:
         condition: service_healthy
 
-  # api-gateway:
-  #   build:
-  #     context: ./api-gateway
-  #   environment:
-  #     PLAYER_CHARACTER_SERVICE_URL: http://player-character-service:8080
-  #     # CAMPAIGN_SERVICE_URL: http://campaign-service:8081
-  #     SPRING_PROFILES_ACTIVE: dev
-  #   ports:
-  #     - "9090:9090"
-  #   networks:
-  #     - dungeoneer-net
-  #   depends_on:
-  #     - player-character-service
+  api-gateway:
+    build:
+      context: ./api-gateway/backend
+      dockerfile: ../Dockerfile
+    environment:
+      PLAYER_CHARACTER_SERVICE_URL: http://player-character-service:8080
+      # CAMPAIGN_SERVICE_URL: http://campaign-service:8081
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "9090:8080"
+    networks:
+      - dungeoneer-net
+    depends_on:
+      - player-character-service
 
   dungeoneer-frontend:
     build:
