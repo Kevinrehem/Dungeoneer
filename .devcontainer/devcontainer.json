@@ -1,10 +1,9 @@
 {
   "name": "Dungeoneer",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "21",
-      "jdkDistro": "ms"
+    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+      "packages": "openjdk-21-jdk,maven"
     },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
@@ -12,9 +11,6 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": false
-    },
-    "ghcr.io/devcontainers-contrib/features/maven-sdkman:2": {
-      "version": "latest"
     }
   },
   "forwardPorts": [3000, 9090],

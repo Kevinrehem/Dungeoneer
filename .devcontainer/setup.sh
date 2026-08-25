@@ -3,6 +3,12 @@ set -e
 
 echo "Starting Devcontainer setup..."
 
+echo "Configuring Git to use HTTPS for GitHub and updating submodules..."
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+git submodule sync
+git submodule update --init --recursive
+
+
 # Frontend setup
 echo "Installing frontend dependencies..."
 if [ -d "dungeoneer-frontend" ]; then
